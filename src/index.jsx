@@ -7,7 +7,7 @@ import './style/index.less'
 
 const options = [{
   value: 'zhejiang',
-  label: 'Zhejiang',
+  label: '浙江',
   children: [{
     value: 'hangzhou',
     label: 'Hangzhou',
@@ -41,35 +41,91 @@ class MultipleCascader extends React.Component {
     this.handleContentClick = this.handleContentClick.bind(this);
     
     this.state = {
-      value: [],
+      values: [],
       inputValue: '',
       count: 0,
+      cascaderValue: [],
     }
   }
 
+  // componentDidUpdate(prevProps, prevState) {
+  //   console.log(prevState.values)
+  //   console.log(this.state.values)
+  //   if(this.state.values.length == prevState.values.length) return false;
+  // }
+
 
   handlePopupVisibleChange(visible) {
-    console.log(visible);
+    // 当选项显示时,选中已选的选项
+    if(visible) {
+      const stateValues = this.state.values;
+      this.handleActiveOption(stateValues, options);
+    }
+  }
+
+  // 设置已选项状态
+  handleActiveOption(stateValues, options) {
+    for(let i = 0; i < stateValues.length; i++) {
+      const stateValue = stateValues[i];
+      if(stateValue.length < 3) {
+        this.setState({
+          cascaderValue: stateValue
+        });
+        return;
+      }
+      for(let j = 0; j < options.length; j++) {
+        if(stateValues[i].includes(options[j].value)) {
+          for(let k = 0; k < options[j].children.length; k++) {
+            if(stateValues[i].includes(options[j].children[k])) {
+              this.setState(() => ({
+                cascaderValue: stateValues[i]
+              }));
+            }
+          }
+        }
+      }
+    }
   }
 
   handleChange(value) {
-    const stateValue = this.state.value;
-    stateValue.push(value);
-    this.setState({
-      value: stateValue
-    })
+    console.log(value);
+    const stateValues = this.state.values;
+    let isMultiple = true;
+    // 只能三级可多选
+    for(let i = 0; i < stateValues.length; i++) {
+      const stateValue = stateValues[i];
+      if(JSON.stringify(stateValue) === JSON.stringify(value) || stateValue.length < 3) {
+        isMultiple  = false;
+        break;
+      }
+    }
+    if(isMultiple) {
+      if(stateValues.length && value.length < 3) return;
+      stateValues.push(value);
+      this.setState({
+        values: stateValues
+      });
+    } else {
+      this.setState({
+        values: [value]
+      });
+    }
+    
+  }
+
+  increment(state, props) {
+    return {
+      values: state.values
+    }
   }
 
   handleContentKeyDown(e) {
     e.stopPropagation();
-    let {count, value} = this.state;
-    // let max = value.length;
-    console.log(value.length)
-    let max = Math.floor(this.refs.content.childNodes.length / 2);
-    console.log('max', max)
-    console.log(e.keyCode)
-    if(e.keyCode == '37' || e.keyCode == '39') {
-      if(e.keyCode == '37') {
+    let {count, values} = this.state;
+    let { keyCode } = e;
+    let max = values.length;
+    if(keyCode == '37' || keyCode == '39') {
+      if(keyCode == '37') {
         // 左移
         count = count == 0 ? 0 : count - 1;
         this.setState({
@@ -83,32 +139,29 @@ class MultipleCascader extends React.Component {
           count
         })
       }
-      console.log('count:', count)
       var selection = getSelection();
       selection.extend(this.refs.content, count * 2);
-    } else if(e.keyCode == 8) {
+    } else if(keyCode == 8 || keyCode == 46) {
       e.preventDefault();
-      // 退格删除
-      count = count == 0 ? 0 : count - 1;
-      let idx = count;
-      // console.log('count==', count)
-      value.splice(count, 1);
+      if(keyCode == 8 && count == 0 || keyCode == 46 && count >= max) return;
+      count = keyCode == 8 ? count - 1 : count;
+      values.splice(count, 1);
       this.setState({
         count,
-        value
+        values
       });
       var selection = getSelection();
-      selection.extend(this.refs.content, ((idx == 0) ? 0 : idx) * 2);
-      selection.collapseToEnd();
+      selection.extend(this.refs.content, count * 2);
+      keyCode == 8 ? selection.collapseToStart() : selection.collapseToEnd();
     }
+    this.forceUpdate();
   }
   // 输入框change事件
   handleInputChange(e) {
-    console.log(e.target.value);
     if(e.target.value != '') {
       this.setState({
         inputValue: e.target.value,
-        value: []
+        values: []
       });
     } else {
       this.setState({
@@ -122,11 +175,10 @@ class MultipleCascader extends React.Component {
   }
 
   handleRemoveClick(idx) {
-    console.log("删除的索引", idx)
-    let { value } = this.state;
-    value.splice(idx, 1);
+    let { values } = this.state;
+    values.splice(idx, 1);
     this.setState({
-      value
+      values
     });
   }
 
@@ -139,8 +191,6 @@ class MultipleCascader extends React.Component {
   handleContentClick() {
     var selection = getSelection()
       // 设置最后光标对象
-      // var lastEditRange;
-      console.log(selection)
       this.refs.content.focus();
       selection.selectAllChildren(this.refs.content);
       // selection.collapseToEnd();
@@ -148,25 +198,10 @@ class MultipleCascader extends React.Component {
   }
 
   render() {
-    console.log(this.state.value)
     const getFileItem = () => {
-      const values = this.state.value;
+      const values = this.state.values;
       if(values.length) {
         return values.map((value, idx) => {
-          // return <div className="ant-mutiple-selected-div">
-          //   {
-          //     (value instanceof Array) && <li key={idx} className="ant-multiple-selected" contentEditable="false">
-          //     {/* 使用input而不是直接文本的目的：文本无法控制块级内容禁止编辑修改,保持删除时整块删除，而不是一个个删除文本内容 */}
-          //       {/* <Input disabled value={this.defaultDisplayRender(value)} /> */}
-          //       <span className="w10"></span>
-          //       <span>{this.defaultDisplayRender(value)}</span>
-          //       <span className="w20"></span>
-          //       {/* <span ref="Span">{this.defaultDisplayRender(value)}</span> */}
-          //       {this.closeIcon(idx)}
-          //     </li>
-          //   }
-          //   <li className="ant-multiple-selected  ant-multiple-selected-placeholder"><span>&nbsp;</span></li>
-          // </div>
           return [
             <div className="ant-multiple-selected  ant-multiple-selected-placeholder" key={idx}></div>,
             <div className="ant-multiple-selected" contentEditable="false" key={idx}>
@@ -180,7 +215,13 @@ class MultipleCascader extends React.Component {
       }
     }
 
-    return <Cascader options={options} changeOnSelect="true" onChange={this.handleChange} onPopupVisibleChange={this.handlePopupVisibleChange}>
+    return <Cascader
+      options={options}
+      changeOnSelect="true"
+      onChange={this.handleChange}
+      value={this.state.cascaderValue}
+      onPopupVisibleChange={this.handlePopupVisibleChange}
+    >
       <div className="ant-multiple-cascader">
         <div 
           className="ant-multiple-selected-wrap"
@@ -192,11 +233,6 @@ class MultipleCascader extends React.Component {
           ref="content"
           >
           {getFileItem()}
-          {/* 目的，div模拟编辑，最后一个图标无法显示，加一个空的li显示出最后一个图标 */}
-          {/* <li className="ant-multiple-selected ant-multiple-selected-placeholder">
-            <input className="ant-multiple-selected-input" />
-            <span>&nbsp;</span>
-          </li> */}
           <div className="ant-multiple-selected  ant-multiple-selected-placeholder"></div>
         </div>
         {/* <input 
