@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Cascader, Input, Icon, Button } from 'antd';
 import RcCascader from 'rc-cascader';
 import { getFileItem } from 'antd/lib/upload/utils';
+import omit from 'omit.js';
 import renderEmpty from 'antd/lib/config-provider/renderEmpty'
 import './style/index.less'
 
@@ -101,6 +102,7 @@ class MultipleCascader extends React.Component {
     this.handleRemoveClick = this.handleRemoveClick.bind(this);
     this.handleContentClick = this.handleContentClick.bind(this);
     this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
+    this.handleInputBlur = this.handleInputBlur.bind(this);
     this.generateFilteredOptions = this.generateFilteredOptions.bind(this);
     
     this.state = {
@@ -111,6 +113,7 @@ class MultipleCascader extends React.Component {
       cascaderValue: [],
       currentValue: [],
       flattenOptions: props.showSearch ? flattenTree(props.options, props) : undefined,
+      isShowSearch: true,
     }
   }
 
@@ -330,7 +333,17 @@ class MultipleCascader extends React.Component {
   }
 
   handleInputKeyDown(e) {
+    let {keyCode} = e;
+    if(keyCode != 38 && keyCode != 40) {
+      e.stopPropagation();
+    }
+  }
+
+  handleInputBlur(e) {
     e.stopPropagation();
+    this.setState({
+      inputValue: ''
+    })
   }
 
   defaultDisplayRender(label) {
@@ -462,14 +475,19 @@ class MultipleCascader extends React.Component {
         },
       ];
     }
+    const CascaderProps = omit(props, [
+      'onChange',
+      'value',
+      'onPopupVisibleChange',
+      'options'
+    ]);
 
     return <Cascader
       options={options}
-      changeOnSelect={true}
       onChange={this.handleChange}
       value={this.state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
-      {...props}
+      {...CascaderProps}
     >
       <div className="ant-multiple-cascader">
         <div 
@@ -485,9 +503,10 @@ class MultipleCascader extends React.Component {
         </div>
         <Input 
           className={this.state.values.length ? 'none mul-ant-input': 'mul-ant-input'}
-          placeholder="请选择"
+          placeholder={this.state.values.length ? '' : '请选择'}
           onChange={this.handleInputChange}
           onKeyDown={this.handleInputKeyDown}
+          onBlur={this.handleInputBlur}
           value={this.state.inputValue}
         />
       </div>
