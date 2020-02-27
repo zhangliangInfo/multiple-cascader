@@ -1,6 +1,6 @@
 {
   "name": "multiple-cascader",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "multiple-cascader",
   "private": false,
   "main": "lib/index.js",
@@ -42,8 +42,7 @@
     "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
-    "@ant-design/icons": "^2.1.1",
-    "antd": "^3.26.11",
+    "antd": "^2.13.14",
     "less": "^3.11.1",
     "less-loader": "^5.0.0",
     "omit.js": "^1.0.2",

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Cascader, Input, Icon } from 'antd';
 import omit from 'omit.js';
-import renderEmpty from 'antd/lib/config-provider/renderEmpty'
+// import renderEmpty from 'antd/lib/config-provider/renderEmpty'
 import './style/index.less'
 
 const defaultLimit = 50;
@@ -434,7 +434,8 @@ class MultipleCascader extends React.Component {
     return [
       {
         [names.value]: 'ANT_CASCADER_NOT_FOUND',
-        [names.label]: notFoundContent || renderEmpty('Cascader'),
+        // [names.label]: notFoundContent || renderEmpty('Cascader'),
+        [names.label]: 'Not Found',
         disabled: true,
         isEmptyNode: true,
       },
