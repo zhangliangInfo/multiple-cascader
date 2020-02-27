@@ -10,7 +10,16 @@
   border-radius: 4px;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
   outline: none;
+  .ant-multiple-selected-wraper {
+    overflow: hidden;
+    white-space: nowrap;
+    .saveInputValue {
+      position: absolute;
+      top: -10000px;
+    }
+  }
   .ant-multiple-selected-wrap {
+    display: inline-block;
     height: 30px;
     margin: 0;
     border-radius: 4px;
@@ -71,13 +80,23 @@
       }
     }
   }
+  .isCanInput {
+    position: relative;
+    width: 5px;
+    height: 26px;
+    margin-left: -5px;
+    border: none;
+    // background: transparent;
+    outline: none;
+    vertical-align: top;
+  }
   .ant-multiple-selected-wrap:focus {
     border: 0 none;
     border-top: 0;
     box-shadow: none;
     outline-color: #fff;
   }
-  .mul-ant-input {
+  .mul-ant-input-place-text {
     display: inline-block;
     position: absolute;
     left: 0;
@@ -85,10 +104,12 @@
     z-index: 11;
     width: 100%;
     height: 28px;
+    line-height: 28px;
     padding-left: 5px;
     outline: none;
     background: transparent;
     border: none;
+    // pointer-events: none;
     cursor: pointer;
     font-size: 14px;
   }

@@ -98,6 +98,7 @@ function handleChange(value) {
 
 ReactDOM.render(
   <Index showSearch={true} options={options}
+  changeOnSelect={true}
     handleChange={handleChange}
   />,
   document.getElementById('app')
