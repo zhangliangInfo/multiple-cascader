@@ -1,7 +1,5 @@
 import * as React from 'react'
-import { Cascader, Input, Icon, Button } from 'antd';
-import RcCascader from 'rc-cascader';
-import { getFileItem } from 'antd/lib/upload/utils';
+import { Cascader, Input, Icon } from 'antd';
 import omit from 'omit.js';
 import renderEmpty from 'antd/lib/config-provider/renderEmpty'
 import './style/index.less'
