@@ -1,16 +1,31 @@
 {
   "name": "multiple-cascader",
   "version": "1.0.0",
-  "description": "",
+  "description": "multiple-cascader",
   "private": true,
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhangliangInfo/drag-drop-sort.git"
+  },
+  "keywords": [
+    "multiple",
+    "cascader",
+    "multiple-cascader",
+    "ant-cascader"
+  ],
   "scripts": {
     "dev": "webpack-dev-server --config webpack.config.js",
     "build": "npx babel src/index.jsx --out-file lib/index.js --presets=@babel/preset-react,@babel/preset-env",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "zhangliang",
+  "author": "zhangliangInfo",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
     "@babel/core": "^7.8.4",
     "@babel/preset-env": "^7.8.4",
     "@babel/preset-react": "^7.8.3",
@@ -29,7 +44,6 @@
   "dependencies": {
     "@ant-design/icons": "^2.1.1",
     "antd": "^3.26.11",
-    "babel-cli": "^6.26.0",
     "less": "^3.11.1",
     "less-loader": "^5.0.0",
     "omit.js": "^1.0.2",
