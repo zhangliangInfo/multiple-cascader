@@ -15,6 +15,19 @@ const options = [{
       value: 'xihu',
       label: 'West Lake',
     }],
+  }, {
+    value: 'suzhou',
+    label: '苏州',
+    children: [{
+      value: 'yuanlin',
+      label: '园林',
+    }, {
+      value: 'bowuyuan',
+      label: '博物院',
+    },{
+      value: 'yulin',
+      label: '画廊',
+    }],
   }],
 }, {
   value: 'jiangsu',
@@ -27,7 +40,61 @@ const options = [{
       label: 'Zhong Hua Men',
     }],
   }],
+}, {
+  value: 'beijing',
+  label: '北京',
+  children: [{
+    value: 'haidian',
+    label: '海淀',
+    children: [{
+      value: 'shangdi',
+      label: '上地',
+    }, {
+      value: 'ruanjianyuan',
+      label: '软件园',
+    }, {
+      value: 'xierqi',
+      label: '西二旗',
+    },{
+      value: 'zhongguancun',
+      label: 'zhongguancun',
+    }],
+  }, {
+    value: 'fengtai',
+    label: '丰台',
+    children: [{
+      value: 'muxiyuan',
+      label: '木樨园',
+    }, {
+      value: 'beijingnanzhan',
+      label: '北京南站',
+    }, {
+      value: 'xiaohongmen',
+      label: '小红门',
+    },{
+      value: 'dahongmen',
+      label: '大红门',
+    }],
+  }, {
+    value: 'daxing',
+    label: '大兴',
+    children: [{
+      value: 'zaoyuan',
+      label: '枣园',
+    }, {
+      value: 'qingyuanlu',
+      label: '清源路',
+    }, {
+      value: 'huangcun',
+      label: '黄村',
+    },{
+      value: 'tiangongyuan',
+      label: '天宫院',
+    }],
+  }],
 }];
+
+let currentValue = [];
 
 class MultipleCascader extends React.Component {
   constructor(props) {
@@ -45,79 +112,181 @@ class MultipleCascader extends React.Component {
       inputValue: '',
       count: 0,
       cascaderValue: [],
+      activeObj: {},
+      currentValue: []
     }
   }
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   console.log(prevState.values)
-  //   console.log(this.state.values)
-  //   if(this.state.values.length == prevState.values.length) return false;
-  // }
+  componentDidUpdate(prevProps, prevState) {
+    if(JSON.stringify(prevState.activeObj) !== JSON.stringify(this.state.activeObj)) {
+      // this.getClassActive(0, this.state.activeObj.level1);
+    }
+  }
 
+  // add active className
+  getClassActive(level, ary = []) {
+    if(isNaN(level)  || typeof level != 'number') return;
+    const parentDOM = document.querySelector('.ant-cascader-menus');
+    if(parentDOM == null) return;
+    const parentUl = parentDOM.querySelectorAll('.ant-cascader-menu')[level];
+    if(parentUl == null) return;
+    const LiItems = parentUl.querySelectorAll('li');
+    const actyCls = 'multiple-cascader-menu-item-active'
+    LiItems.forEach(LiItem => {
+      const clsList = Array.from(LiItem.classList);
+      if(clsList.indexOf(actyCls) !== -1) {
+        clsList.splice(clsList.indexOf(actyCls), 1);
+      }
+      LiItem.className = clsList.join(' ');
+    });
+    setTimeout(function() {
+      ary.forEach(_ => {
+        let LiItem = parentUl.querySelectorAll('li')[_];
+        if(LiItem && !Array.from(LiItem.classList).includes(actyCls)) {
+          LiItem.className += (' ' + actyCls);
+        }
+      });
+    }, 0);
+  }
 
   handlePopupVisibleChange(visible) {
     // 当选项显示时,选中已选的选项
     if(visible) {
-      const stateValues = this.state.values;
+      const {values: stateValues} = this.state;
       this.handleActiveOption(stateValues, options);
+    } else {
+      currentValue = [];
     }
   }
 
-  // 设置已选项状态
+  /**
+   * 
+   * @param {string[][]} stateValues 
+   * @param {object[]} options 
+   */
   handleActiveOption(stateValues, options) {
+    this.getChildActiveIndexs(options, stateValues, currentValue.length ? currentValue : this.state.cascaderValue);
+  }
+
+  getChildIndexs(stateValues, options, level = 0) {
+    const indexs = [];
     for(let i = 0; i < stateValues.length; i++) {
-      const stateValue = stateValues[i];
-      if(stateValue.length < 3) {
-        this.setState({
-          cascaderValue: stateValue
-        });
-        return;
-      }
-      for(let j = 0; j < options.length; j++) {
-        if(stateValues[i].includes(options[j].value)) {
-          for(let k = 0; k < options[j].children.length; k++) {
-            if(stateValues[i].includes(options[j].children[k])) {
-              this.setState(() => ({
-                cascaderValue: stateValues[i]
-              }));
-            }
-          }
-        }
+      const value = stateValues[i][level]; // 默认查找一级
+      const index = options.findIndex(option => value == option.value);
+      if( index !== -1) {
+        indexs.push(index);
       }
     }
+    return indexs;
+  }
+
+  // 获取已选中的索引
+  getChildActiveIndexs(options = [], stateValues = [], cascaderValue = []) {
+    let _this = this;
+
+    function findActiveIndex(options = [], stateValue = [], cascaderValue = []) {
+      if(stateValue.length < 1) {
+        return;
+      }
+      let [firstName, secName, thirdName] = cascaderValue;
+      let firstObj = {}, secObj = {};
+      let firstIdxs = [];
+      stateValue.forEach(values => {
+        let idx = options.findIndex(o => o.value == values[0]);
+        if(!firstIdxs.includes(idx) && idx !== -1) {
+          firstIdxs.push(idx);
+        }
+        if(firstName && values[0] == firstName && values[1]) {
+          // 找到下级的选中索引
+          firstObj.index = idx;
+          if(firstObj.children == undefined) {
+            firstObj.children = [];
+          }
+          firstObj.children.push(values[1]);
+        }
+      });
+      // console.log(firstObj)
+      // 二级
+      let {index, children} = firstObj;
+      if(index !== undefined) {
+        options[index].children.forEach((o, idx) => {
+          if(children.includes(o.value)) {
+            if(firstObj.childrenIndex == undefined) {
+              firstObj.childrenIndex = [];
+            }
+            firstObj.childrenIndex.push(idx);
+          }
+        });
+        // 三级
+        let {childrenIndex} = firstObj;
+        options[index].children[childrenIndex[0]].children.forEach((o, idx) => {
+          stateValue.forEach(values => {
+            if(values[2] == o.value) {
+              if(secObj.childrenIndex == undefined) {
+                secObj.childrenIndex = [];
+              }
+              secObj.childrenIndex.push(idx);
+            }
+          });
+        });
+      }
+      console.log(firstIdxs)
+      console.log(firstObj.childrenIndex)
+      console.log(secObj.childrenIndex)
+      // 加上样式
+      _this.getClassActive(0, firstIdxs);
+      _this.getClassActive(1, firstObj.childrenIndex);
+      _this.getClassActive(2, secObj.childrenIndex);
+      return {
+        firstIdxs,
+        secIdxs: firstObj.childrenIndex,
+        thirdIdxs: secObj.childrenIndex
+      }
+    }
+
+    cascaderValue = cascaderValue.length > 0 ? cascaderValue :
+               stateValues.length > 0 ? stateValues[0] : [];
+    // 根据cascaderValue的值找到下级所有被选中的索引
+    findActiveIndex(options, stateValues, cascaderValue);
   }
 
   handleChange(value) {
     console.log(value);
     const stateValues = this.state.values;
     let isMultiple = true;
+    let isChange   = true;
+    // 用于判断当前点击的位置
+    currentValue = value;
     // 只能三级可多选
     for(let i = 0; i < stateValues.length; i++) {
       const stateValue = stateValues[i];
       if(JSON.stringify(stateValue) === JSON.stringify(value) || stateValue.length < 3) {
         isMultiple  = false;
+        isChange = !(JSON.stringify(stateValue) === JSON.stringify(value))
         break;
       }
     }
+    let values = [];
     if(isMultiple) {
+      // 一二三级禁止混合多选
       if(stateValues.length && value.length < 3) return;
       stateValues.push(value);
+      values = stateValues;
       this.setState({
-        values: stateValues
+        values,
+        cascaderValue: values[0]
       });
     } else {
-      this.setState({
-        values: [value]
-      });
+      if(isChange) {
+        values = [value];
+        this.setState({
+          values,
+          cascaderValue: value
+        });
+      }
     }
-    
   }
 
-  increment(state, props) {
-    return {
-      values: state.values
-    }
-  }
 
   handleContentKeyDown(e) {
     e.stopPropagation();
@@ -177,9 +346,17 @@ class MultipleCascader extends React.Component {
   handleRemoveClick(idx) {
     let { values } = this.state;
     values.splice(idx, 1);
+    // if(values.length <= 1) {
+    //   this.setState({
+    //     cascaderValue: values.length ? values[0] : []
+    //   })
+    // }
+    let cascaderValue = values.length ? values[0] : [];
     this.setState({
-      values
+      values,
+      cascaderValue
     });
+    this.getChildActiveIndexs(options, values, cascaderValue);
   }
 
   closeIcon(idx) {
@@ -197,14 +374,18 @@ class MultipleCascader extends React.Component {
       selection.collapseToStart();
   }
 
+  PopupContainer() {
+    return () => document.getElementById('abcd')
+  }
+
   render() {
     const getFileItem = () => {
       const values = this.state.values;
       if(values.length) {
         return values.map((value, idx) => {
           return [
-            <div className="ant-multiple-selected  ant-multiple-selected-placeholder" key={idx}></div>,
-            <div className="ant-multiple-selected" contentEditable="false" key={idx}>
+            <div className="ant-multiple-selected  ant-multiple-selected-placeholder" key={value + 'placehodler'}></div>,
+            <div className="ant-multiple-selected" contentEditable="false" suppressContentEditableWarning="true" key={value}>
               <span className="ant-multiple-prefix"></span>
               <span>{this.defaultDisplayRender(value)}</span>
               <span className="ant-multiple-suffix"></span>
@@ -217,7 +398,7 @@ class MultipleCascader extends React.Component {
 
     return <Cascader
       options={options}
-      changeOnSelect="true"
+      changeOnSelect={true}
       onChange={this.handleChange}
       value={this.state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
@@ -226,7 +407,7 @@ class MultipleCascader extends React.Component {
         <div 
           className="ant-multiple-selected-wrap"
           contentEditable="true"
-          suppressContentEditableWarning
+          suppressContentEditableWarning="true"
           onKeyDown={this.handleContentKeyDown}
           data-placeholder="请选择"
           onClick={this.handleContentClick}
