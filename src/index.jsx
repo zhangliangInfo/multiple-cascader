@@ -2,97 +2,91 @@ import * as React from 'react'
 import { Cascader, Input, Icon, Button } from 'antd';
 import RcCascader from 'rc-cascader';
 import { getFileItem } from 'antd/lib/upload/utils';
+import renderEmpty from 'antd/lib/config-provider/renderEmpty'
 import './style/index.less'
 
+const defaultLimit = 50;
 
-const options = [{
-  value: 'zhejiang',
-  label: '浙江',
-  children: [{
-    value: 'hangzhou',
-    label: 'Hangzhou',
-    children: [{
-      value: 'xihu',
-      label: 'West Lake',
-    }],
-  }, {
-    value: 'suzhou',
-    label: '苏州',
-    children: [{
-      value: 'yuanlin',
-      label: '园林',
-    }, {
-      value: 'bowuyuan',
-      label: '博物院',
-    },{
-      value: 'yulin',
-      label: '画廊',
-    }],
-  }],
-}, {
-  value: 'jiangsu',
-  label: 'Jiangsu',
-  children: [{
-    value: 'nanjing',
-    label: 'Nanjing',
-    children: [{
-      value: 'zhonghuamen',
-      label: 'Zhong Hua Men',
-    }],
-  }],
-}, {
-  value: 'beijing',
-  label: '北京',
-  children: [{
-    value: 'haidian',
-    label: '海淀',
-    children: [{
-      value: 'shangdi',
-      label: '上地',
-    }, {
-      value: 'ruanjianyuan',
-      label: '软件园',
-    }, {
-      value: 'xierqi',
-      label: '西二旗',
-    },{
-      value: 'zhongguancun',
-      label: 'zhongguancun',
-    }],
-  }, {
-    value: 'fengtai',
-    label: '丰台',
-    children: [{
-      value: 'muxiyuan',
-      label: '木樨园',
-    }, {
-      value: 'beijingnanzhan',
-      label: '北京南站',
-    }, {
-      value: 'xiaohongmen',
-      label: '小红门',
-    },{
-      value: 'dahongmen',
-      label: '大红门',
-    }],
-  }, {
-    value: 'daxing',
-    label: '大兴',
-    children: [{
-      value: 'zaoyuan',
-      label: '枣园',
-    }, {
-      value: 'qingyuanlu',
-      label: '清源路',
-    }, {
-      value: 'huangcun',
-      label: '黄村',
-    },{
-      value: 'tiangongyuan',
-      label: '天宫院',
-    }],
-  }],
-}];
+function defaultRenderFilteredOption(
+  inputValue,
+  path
+) {
+  return path.map((option, index) => {
+    const label = option['label'];
+    const node =
+    label.indexOf(inputValue) > -1
+        ? highlightKeyword(label, inputValue, 'ant-cascader')
+        : label;
+    return index === 0 ? node : [' / ', node];
+  });
+}
+
+function highlightKeyword(str, keyword, prefixCls) {
+  return str.split(keyword).map((node, index) =>
+    index === 0
+      ? node
+      : [
+          <span className={`${prefixCls}-menu-item-keyword`} key="seperator">
+            {keyword}
+          </span>,
+          node,
+        ],
+  );
+}
+
+function defaultFilterOption(
+  inputValue,
+  path,
+) {
+  return path.some(option => (option.label).indexOf(inputValue) > -1);
+}
+
+function defaultSortFilteredOption(
+  a,
+  b,
+  inputValue,
+  names,
+) {
+  function callback(elem) {
+    return (elem[names.label]).indexOf(inputValue) > -1;
+  }
+
+  return a.findIndex(callback) - b.findIndex(callback);
+}
+
+function getFieldNames({ fieldNames }) {
+  return fieldNames;
+}
+
+function getFilledFieldNames(props) {
+  const fieldNames = getFieldNames(props) || {};
+  const names = {
+    children: fieldNames.children || 'children',
+    label: fieldNames.label || 'label',
+    value: fieldNames.value || 'value',
+  };
+  return names;
+}
+
+function flattenTree(
+  options,
+  props,
+  ancestor = [],
+) {
+  const names = getFilledFieldNames(props);
+  let flattenOptions = [];
+  const childrenName = names.children;
+  options.forEach(option => {
+    const path = ancestor.concat(option);
+    if (props.changeOnSelect || !option[childrenName] || !option[childrenName].length) {
+      flattenOptions.push(path);
+    }
+    if (option[childrenName]) {
+      flattenOptions = flattenOptions.concat(flattenTree(option[childrenName], props, path));
+    }
+  });
+  return flattenOptions;
+}
 
 let currentValue = [];
 
@@ -106,21 +100,22 @@ class MultipleCascader extends React.Component {
     this.handlePopupVisibleChange = this.handlePopupVisibleChange.bind(this);
     this.handleRemoveClick = this.handleRemoveClick.bind(this);
     this.handleContentClick = this.handleContentClick.bind(this);
+    this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
+    this.generateFilteredOptions = this.generateFilteredOptions.bind(this);
     
     this.state = {
       values: [],
       inputValue: '',
       count: 0,
+      options: props.options,
       cascaderValue: [],
-      activeObj: {},
-      currentValue: []
+      currentValue: [],
+      flattenOptions: props.showSearch ? flattenTree(props.options, props) : undefined,
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(JSON.stringify(prevState.activeObj) !== JSON.stringify(this.state.activeObj)) {
-      // this.getClassActive(0, this.state.activeObj.level1);
-    }
+    
   }
 
   // add active className
@@ -153,7 +148,7 @@ class MultipleCascader extends React.Component {
     // 当选项显示时,选中已选的选项
     if(visible) {
       const {values: stateValues} = this.state;
-      this.handleActiveOption(stateValues, options);
+      this.handleActiveOption(stateValues, this.props.options);
     } else {
       currentValue = [];
     }
@@ -317,26 +312,24 @@ class MultipleCascader extends React.Component {
       values.splice(count, 1);
       this.setState({
         count,
-        values
+        values,
+        cascaderValue: values[0] || []
       });
       var selection = getSelection();
       selection.extend(this.refs.content, count * 2);
       keyCode == 8 ? selection.collapseToStart() : selection.collapseToEnd();
     }
-    this.forceUpdate();
   }
   // 输入框change事件
   handleInputChange(e) {
-    if(e.target.value != '') {
-      this.setState({
-        inputValue: e.target.value,
-        values: []
-      });
-    } else {
-      this.setState({
-        inputValue: '',
-      });
-    }
+    let value = e.target.value;
+    this.setState({
+      inputValue: value
+    });
+  }
+
+  handleInputKeyDown(e) {
+    e.stopPropagation();
   }
 
   defaultDisplayRender(label) {
@@ -346,17 +339,12 @@ class MultipleCascader extends React.Component {
   handleRemoveClick(idx) {
     let { values } = this.state;
     values.splice(idx, 1);
-    // if(values.length <= 1) {
-    //   this.setState({
-    //     cascaderValue: values.length ? values[0] : []
-    //   })
-    // }
     let cascaderValue = values.length ? values[0] : [];
     this.setState({
       values,
       cascaderValue
     });
-    this.getChildActiveIndexs(options, values, cascaderValue);
+    this.getChildActiveIndexs(this.props.options, values, cascaderValue);
   }
 
   closeIcon(idx) {
@@ -378,13 +366,75 @@ class MultipleCascader extends React.Component {
     return () => document.getElementById('abcd')
   }
 
+  generateFilteredOptions(prefixCls = 'ant-cascader') {
+    const { showSearch = {}, notFoundContent } = this.props;
+    const names = {
+      'label': 'label',
+      'value': 'value'
+    };
+    const {
+      filter = defaultFilterOption,
+      render = defaultRenderFilteredOption,
+      sort = defaultSortFilteredOption,
+      limit = defaultLimit,
+    } = showSearch;
+    const { flattenOptions = [], inputValue } = this.state;
+  
+    // Limit the filter if needed
+    let filtered;
+    if (limit > 0) {
+      filtered = [];
+      let matchCount = 0;
+
+      // Perf optimization to filter items only below the limit
+      flattenOptions.some(path => {
+        const match = filter(this.state.inputValue, path);
+        if (match) {
+          filtered.push(path);
+          matchCount += 1;
+        }
+        return matchCount >= limit;
+      });
+    } else {
+      warning(
+        typeof limit !== 'number',
+        'Cascader',
+        "'limit' of showSearch should be positive number or false.",
+      );
+      filtered = flattenOptions.filter(path => filter(this.state.inputValue, path, names));
+    }
+
+    filtered.sort((a, b) => sort(a, b, inputValue, names));
+
+    if (filtered.length > 0) {
+      return filtered.map((path) => {
+        return {
+          __IS_FILTERED_OPTION: true,
+          path,
+          [names.value]: path.map((o) => o[names.value]),
+          [names.label]: render(inputValue, path, prefixCls, names),
+          disabled: path.some((o) => !!o.disabled),
+          isEmptyNode: true,
+        };
+      });
+    }
+    return [
+      {
+        [names.value]: 'ANT_CASCADER_NOT_FOUND',
+        [names.label]: notFoundContent || renderEmpty('Cascader'),
+        disabled: true,
+        isEmptyNode: true,
+      },
+    ];
+  }
+
   render() {
     const getFileItem = () => {
       const values = this.state.values;
       if(values.length) {
         return values.map((value, idx) => {
           return [
-            <div className="ant-multiple-selected  ant-multiple-selected-placeholder" key={value + 'placehodler'}></div>,
+            <div className="ant-multiple-selected ant-multiple-selected-placeholder" key={value + 'placehodler'}></div>,
             <div className="ant-multiple-selected" contentEditable="false" suppressContentEditableWarning="true" key={value}>
               <span className="ant-multiple-prefix"></span>
               <span>{this.defaultDisplayRender(value)}</span>
@@ -395,6 +445,22 @@ class MultipleCascader extends React.Component {
         })
       }
     }
+    let { props, state } = this;
+    let { options } = props;
+    const names = getFilledFieldNames(this.props);
+    if (options && options.length > 0) {
+      if (state.inputValue) {
+        options = this.generateFilteredOptions();
+      }
+    } else {
+      options = [
+        {
+          [names.label]: notFoundContent || renderEmpty('Cascader'),
+          [names.value]: 'ANT_CASCADER_NOT_FOUND',
+          disabled: true,
+        },
+      ];
+    }
 
     return <Cascader
       options={options}
@@ -402,6 +468,7 @@ class MultipleCascader extends React.Component {
       onChange={this.handleChange}
       value={this.state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
+      {...props}
     >
       <div className="ant-multiple-cascader">
         <div 
@@ -409,19 +476,19 @@ class MultipleCascader extends React.Component {
           contentEditable="true"
           suppressContentEditableWarning="true"
           onKeyDown={this.handleContentKeyDown}
-          data-placeholder="请选择"
           onClick={this.handleContentClick}
           ref="content"
           >
           {getFileItem()}
           <div className="ant-multiple-selected  ant-multiple-selected-placeholder"></div>
         </div>
-        {/* <input 
-          className={this.state.value.length ? 'none mul-ant-input': 'mul-ant-input'}
-          placeholder={this.state.value.length ? '' : '请选择'}
+        <Input 
+          className={this.state.values.length ? 'none mul-ant-input': 'mul-ant-input'}
+          placeholder="请选择"
           onChange={this.handleInputChange}
-          onKeyDown={this.handleContentKeyDown}
-        /> */}
+          onKeyDown={this.handleInputKeyDown}
+          value={this.state.inputValue}
+        />
       </div>
     </Cascader>
   }
