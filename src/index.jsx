@@ -118,7 +118,8 @@ class MultipleCascader extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
+    let {handleChange} = this.props;
+    typeof handleChange == 'function' && handleChange(this.state.values);
   }
 
   // add active className

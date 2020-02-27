@@ -91,8 +91,14 @@ let options = [{
   }],
 }];
 
+function handleChange(value) {
+  console.log(value)
+}
+
 
 ReactDOM.render(
-  <Index showSearch={true} options={options} />,
+  <Index showSearch={true} options={options}
+    handleChange={handleChange}
+  />,
   document.getElementById('app')
 )
