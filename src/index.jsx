@@ -318,6 +318,7 @@ class MultipleCascader extends React.Component {
       var selection = getSelection();
       selection.extend(this.refs.content, count * 2);
       keyCode == 8 ? selection.collapseToStart() : selection.collapseToEnd();
+      this.getChildActiveIndexs(this.props.options, values, values[0]);
     }
   }
   // 输入框change事件
