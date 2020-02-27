@@ -102,16 +102,19 @@ class MultipleCascader extends React.Component {
     this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
     this.handleInputBlur = this.handleInputBlur.bind(this);
     this.generateFilteredOptions = this.generateFilteredOptions.bind(this);
+    this.handleHasInputChange = this.handleHasInputChange.bind(this);
+    this.handleHasInputKeyDown = this.handleHasInputKeyDown.bind(this);
     
     this.state = {
       values: [],
+      labels: [],
       inputValue: '',
       count: 0,
       options: props.options,
       cascaderValue: [],
       currentValue: [],
       flattenOptions: props.showSearch ? flattenTree(props.options, props) : undefined,
-      isShowSearch: true,
+      visiblePopup: false
     }
   }
 
@@ -148,6 +151,9 @@ class MultipleCascader extends React.Component {
 
   handlePopupVisibleChange(visible) {
     // 当选项显示时,选中已选的选项
+    this.setState({
+      visiblePopup: visible
+    });
     if(visible) {
       const {values: stateValues} = this.state;
       this.handleActiveOption(stateValues, this.props.options);
@@ -247,9 +253,13 @@ class MultipleCascader extends React.Component {
     findActiveIndex(options, stateValues, cascaderValue);
   }
 
-  handleChange(value) {
+  handleChange(value, selectedOptions) {
     console.log(value);
-    const stateValues = this.state.values;
+    let selectedLabels = [];
+    for(let i = 0; i<selectedOptions.length; i++) {
+      selectedLabels.push(selectedOptions[i].label)
+    }
+    const {values: stateValues, labels} = this.state;
     let isMultiple = true;
     let isChange   = true;
     // 用于判断当前点击的位置
@@ -268,9 +278,11 @@ class MultipleCascader extends React.Component {
       // 一二三级禁止混合多选
       if(stateValues.length && value.length < 3) return;
       stateValues.push(value);
+      labels.push(selectedLabels);
       values = stateValues;
       this.setState({
         values,
+        labels,
         cascaderValue: values[0]
       });
     } else {
@@ -278,6 +290,7 @@ class MultipleCascader extends React.Component {
         values = [value];
         this.setState({
           values,
+          labels: [selectedLabels],
           cascaderValue: value
         });
       }
@@ -287,9 +300,10 @@ class MultipleCascader extends React.Component {
 
   handleContentKeyDown(e) {
     e.stopPropagation();
-    let {count, values} = this.state;
+    let {count, values, labels} = this.state;
     let { keyCode } = e;
     let max = values.length;
+    let refContent = this.refs.content;
     if(keyCode == '37' || keyCode == '39') {
       if(keyCode == '37') {
         // 左移
@@ -306,21 +320,25 @@ class MultipleCascader extends React.Component {
         })
       }
       var selection = getSelection();
-      selection.extend(this.refs.content, count * 2);
+      selection.extend(refContent, count * 2);
     } else if(keyCode == 8 || keyCode == 46) {
       e.preventDefault();
       if(keyCode == 8 && count == 0 || keyCode == 46 && count >= max) return;
       count = keyCode == 8 ? count - 1 : count;
       values.splice(count, 1);
+      labels.splice(count, 1);
       this.setState({
         count,
         values,
+        labels,
         cascaderValue: values[0] || []
       });
       var selection = getSelection();
-      selection.extend(this.refs.content, count * 2);
+      selection.extend(refContent, count * 2);
       keyCode == 8 ? selection.collapseToStart() : selection.collapseToEnd();
       this.getChildActiveIndexs(this.props.options, values, values[0]);
+    } else {
+      e.preventDefault();
     }
   }
   // 输入框change事件
@@ -329,6 +347,15 @@ class MultipleCascader extends React.Component {
     this.setState({
       inputValue: value
     });
+  }
+  // 
+  handleHasInputChange(e) {
+    e.stopPropagation();
+    console.log(e.target.value);
+  }
+  handleHasInputKeyDown(e) {
+    console.log(12312);
+    // e.stopPropagation();
   }
 
   handleInputKeyDown(e) {
@@ -350,11 +377,13 @@ class MultipleCascader extends React.Component {
   }
 
   handleRemoveClick(idx) {
-    let { values } = this.state;
+    let { values, labels } = this.state;
     values.splice(idx, 1);
+    labels.splice(idx, 1);
     let cascaderValue = values.length ? values[0] : [];
     this.setState({
       values,
+      labels,
       cascaderValue
     });
     this.getChildActiveIndexs(this.props.options, values, cascaderValue);
@@ -444,9 +473,9 @@ class MultipleCascader extends React.Component {
 
   render() {
     const getFileItem = () => {
-      const values = this.state.values;
-      if(values.length) {
-        return values.map((value, idx) => {
+      const {labels} = this.state;
+      if(labels.length) {
+        return labels.map((value, idx) => {
           return [
             <div className="ant-multiple-selected ant-multiple-selected-placeholder" key={value + 'placehodler'}></div>,
             <div className="ant-multiple-selected" contentEditable="false" suppressContentEditableWarning="true" key={value}>
@@ -469,7 +498,8 @@ class MultipleCascader extends React.Component {
     } else {
       options = [
         {
-          [names.label]: notFoundContent || renderEmpty('Cascader'),
+          // [names.label]: notFoundContent || renderEmpty('Cascader'),
+          [names.label]: 'Not Found',
           [names.value]: 'ANT_CASCADER_NOT_FOUND',
           disabled: true,
         },
@@ -482,6 +512,10 @@ class MultipleCascader extends React.Component {
       'options'
     ]);
 
+    function handleFocus(e) {
+      e.stopPropagation();
+    }
+
     return <Cascader
       options={options}
       onChange={this.handleChange}
@@ -490,16 +524,18 @@ class MultipleCascader extends React.Component {
       {...CascaderProps}
     >
       <div className="ant-multiple-cascader">
-        <div 
-          className="ant-multiple-selected-wrap"
-          contentEditable="true"
-          suppressContentEditableWarning="true"
-          onKeyDown={this.handleContentKeyDown}
-          onClick={this.handleContentClick}
-          ref="content"
-          >
-          {getFileItem()}
-          <div className="ant-multiple-selected  ant-multiple-selected-placeholder"></div>
+        <div style={{overflow: 'hidden'}}>
+          <div 
+            className="ant-multiple-selected-wrap"
+            contentEditable="true"
+            suppressContentEditableWarning="true"
+            onKeyDown={this.handleContentKeyDown}
+            onClick={this.handleContentClick}
+            ref="content"
+            >
+            {getFileItem()}
+            <div className="ant-multiple-selected  ant-multiple-selected-placeholder isCanInput"></div>
+          </div>
         </div>
         <Input 
           className={this.state.values.length ? 'none mul-ant-input': 'mul-ant-input'}
@@ -509,6 +545,7 @@ class MultipleCascader extends React.Component {
           onBlur={this.handleInputBlur}
           value={this.state.inputValue}
         />
+        <Icon type="down" className={state.visiblePopup ? 'ant-cascader-picker-arrow ant-cascader-picker-arrow-expand' : 'ant-cascader-picker-arrow'} />
       </div>
     </Cascader>
   }

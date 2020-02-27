@@ -1,5 +1,4 @@
 .ant-multiple-cascader {
-  overflow: hidden;
   position: relative;
   width: 500px;
   height: 32px;
@@ -73,10 +72,10 @@
     }
   }
   .ant-multiple-selected-wrap:focus {
-    border-color: #40a9ff;
-    border-right-width: 1px !important;
-    outline: 0;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    border: 0 none;
+    border-top: 0;
+    box-shadow: none;
+    outline-color: #fff;
   }
   .mul-ant-input {
     display: inline-block;
@@ -96,6 +95,18 @@
   .none {
     display: none;
   }
+}
+.ant-multiple-cascader:focus {
+  border: 1px solid #40a9ff;
+  border-color: #40a9ff;
+  border-right-width: 1px !important;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+.ant-multiple-cascader:hover {
+  border-width: 1px;
+  border-color: #40a9ff;
+  border-right-width: 1px !important;
 }
 // ant
 .ant-cascader-menu-item {
