@@ -191,7 +191,6 @@ class MultipleCascader extends React.Component {
   // 获取已选中的索引
   getChildActiveIndexs(options = [], stateValues = [], cascaderValue = []) {
     let _this = this;
-
     function findActiveIndex(options = [], stateValue = [], cascaderValue = []) {
       if(stateValue.length < 1) {
         return;
@@ -226,8 +225,16 @@ class MultipleCascader extends React.Component {
           }
         });
         // 三级
-        let {childrenIndex} = firstObj;
-        options[index].children[childrenIndex[0]].children.forEach((o, idx) => {
+        // 若点击选中当前二级,查询三级是否有已选项
+        let curClickSecdIdx, curClickSecdNodes = [];
+        if(!thirdName && secName) {
+          curClickSecdIdx = options[index].children.findIndex(o => o.value == secName);
+          curClickSecdNodes = options[index].children[curClickSecdIdx].children;
+        } else {
+          let {childrenIndex} = firstObj;
+          curClickSecdNodes = options[index].children[childrenIndex[0]].children;
+        }
+        curClickSecdNodes.forEach((o, idx) => {
           stateValue.forEach(values => {
             if(values[2] == o.value) {
               if(secObj.childrenIndex == undefined) {
@@ -238,9 +245,9 @@ class MultipleCascader extends React.Component {
           });
         });
       }
-      console.log(firstIdxs)
-      console.log(firstObj.childrenIndex)
-      console.log(secObj.childrenIndex)
+      // console.log(firstIdxs)
+      // console.log(firstObj.childrenIndex)
+      // console.log(secObj.childrenIndex)
       // 加上样式
       _this.getClassActive(0, firstIdxs);
       _this.getClassActive(1, firstObj.childrenIndex);
@@ -311,7 +318,6 @@ class MultipleCascader extends React.Component {
     let { keyCode } = e;
     let max = values.length;
     let refContent = this.refs.content;
-    console.log('IntContent', keyCode)
     if(keyCode == '37' || keyCode == '39') {
       if(keyCode == '37') {
         // 左移
@@ -327,8 +333,6 @@ class MultipleCascader extends React.Component {
           count
         });
       }
-      console.log(count);
-      console.log(max);
       if(count == max) {
         refContent.blur();
         this.refs.privateInput.focus();
@@ -379,18 +383,14 @@ class MultipleCascader extends React.Component {
     // let count = values.length;
     let refContent = this.refs.content;
     let privateInput = this.refs.privateInput;
-    console.log('inputKeycode', keyCode);
     // return;
     if([37, 39].includes(keyCode) === false) {
-      console.log(inputValue)
       if(inputValue) return;
       if(keyCode == 8) {
         if(keyCode == 8 && count == 0) return;
         count = keyCode == 8 ? count - 1 : count;
-        console.log('count-----', count)
         values.splice(count, 1);
         labels.splice(count, 1);
-        console.log('values=====', values)
         this.setState({
           count,
           values,
@@ -472,7 +472,6 @@ class MultipleCascader extends React.Component {
   }
 
   handleContentClick() {
-    console.log(111231231)
     var selection = getSelection()
       // 设置最后光标对象
       this.refs.content.focus();
@@ -483,7 +482,6 @@ class MultipleCascader extends React.Component {
   }
 
   handlePlaceClick() {
-    console.log('123213213213')
     this.refs.privateInput.focus();
   }
 
