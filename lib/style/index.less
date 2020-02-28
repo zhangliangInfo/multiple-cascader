@@ -1,18 +1,27 @@
 .ant-multiple-cascader {
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
   width: 500px;
-  height: 32px;
-  margin: 50px auto;
-  line-height: 32px;
+  height: 28px;
+  // margin: 50px auto;
+  line-height: 28px;
   font-size: 14px;
   background: #fff;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
   outline: none;
+  .ant-multiple-selected-wraper {
+    overflow: hidden;
+    white-space: nowrap;
+    .saveInputValue {
+      position: absolute;
+      top: -10000px;
+    }
+  }
   .ant-multiple-selected-wrap {
-    height: 30px;
+    display: inline-block;
+    height: 26px;
     margin: 0;
     border-radius: 4px;
     white-space: nowrap;
@@ -25,10 +34,10 @@
       overflow: hidden;
       position: relative;
       display: inline-block;
-      height: 24px;
+      height: 22px;
       line-height: 18px;
       // padding: 0 20px 0 10px;
-      margin-top: 3px;
+      margin-top: 2px;
       // margin-right: 5px;
       border: 1px solid #e8e8ee;
       background-color: #fafafa;
@@ -41,13 +50,13 @@
       }
       .ant-multiple-prefix, .ant-multiple-suffix {
         width: 10px;
-        height: 22px;
+        height: 20px;
       }
       .ant-multiple-suffix {
         width: 20px;
       }
       .ant-input {
-        height: 22px;
+        height: 20px;
       }
       .ant-multiple-icon-remove {
         position: absolute;
@@ -63,7 +72,7 @@
       padding: 0;
       width: 5px;
       margin-left: 5px;
-      line-height: 24px;
+      line-height: 20px;
       border: none;
       background: #fff;
       .ant-multiple-selected-input {
@@ -72,24 +81,36 @@
       }
     }
   }
-  .ant-multiple-selected-wrap:focus {
-    border-color: #40a9ff;
-    border-right-width: 1px !important;
-    outline: 0;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  .isCanInput {
+    position: relative;
+    width: 5px;
+    height: 22px;
+    margin-left: -5px;
+    border: none;
+    // background: transparent;
+    outline: none;
+    vertical-align: top;
   }
-  .mul-ant-input {
+  .ant-multiple-selected-wrap:focus {
+    border: 0 none;
+    border-top: 0;
+    box-shadow: none;
+    outline-color: #fff;
+  }
+  .mul-ant-input-place-text {
     display: inline-block;
     position: absolute;
     left: 0;
     top: 0;
     z-index: 11;
     width: 100%;
-    height: 28px;
+    height: 24px;
+    line-height: 24px;
     padding-left: 5px;
     outline: none;
     background: transparent;
     border: none;
+    // pointer-events: none;
     cursor: pointer;
     font-size: 14px;
   }
@@ -97,16 +118,40 @@
     display: none;
   }
 }
+.ant-multiple-cascader:focus {
+  border: 1px solid #40a9ff;
+  border-color: #40a9ff;
+  border-right-width: 1px !important;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+.ant-multiple-cascader:hover {
+  border-width: 1px;
+  border-color: #40a9ff;
+  border-right-width: 1px !important;
+}
 // ant
-.ant-cascader-menu-item {
-  margin-bottom: 1px;
-}
-.multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
-  font-weight: 600;
-  background-color: #fafafa;
-  // background-color: #faa;
-}
-.ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
-  background-color: #f0f0f0;
-  // background-color: #f66;
+.multipleCascaderPopup {
+  .ant-cascader-menu-item {
+    margin-bottom: 1px;
+    span.ant-cascader-menu-item-expand-icon {
+      display: none;
+    }
+  }
+  .multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
+    font-weight: 600;
+    background-color: #fafafa;
+    // background-color: #faa;
+  }
+  .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
+    background-color: #f0f0f0;
+    // background-color: #f66;
+  }
+  .ant-cascader-menu {
+    li {
+      .ant-cascader-menu-item-expand-icon {
+        display: none;
+      }
+    }
+  }
 }

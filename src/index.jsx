@@ -120,14 +120,18 @@ class MultipleCascader extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    let {handleChange} = this.props;
-    typeof handleChange == 'function' && handleChange(this.state.values);
+    if(JSON.stringify(this.state.values) != JSON.stringify(prevState.values)) {
+      let {onChange} = this.props;
+      typeof onChange == 'function' && onChange(this.state.values);
+    }
   }
 
   // add active className
   getClassActive(level, ary = []) {
+    const {index} = this.props;
+    if(index == undefined) return;
     if(isNaN(level)  || typeof level != 'number') return;
-    const parentDOM = document.querySelector('.ant-cascader-menus');
+    const parentDOM = document.querySelectorAll('.ant-cascader-menus')[index];
     if(parentDOM == null) return;
     const parentUl = parentDOM.querySelectorAll('.ant-cascader-menu')[level];
     if(parentUl == null) return;
@@ -307,6 +311,7 @@ class MultipleCascader extends React.Component {
     let { keyCode } = e;
     let max = values.length;
     let refContent = this.refs.content;
+    console.log('IntContent', keyCode)
     if(keyCode == '37' || keyCode == '39') {
       if(keyCode == '37') {
         // 左移
@@ -322,6 +327,8 @@ class MultipleCascader extends React.Component {
           count
         });
       }
+      console.log(count);
+      console.log(max);
       if(count == max) {
         refContent.blur();
         this.refs.privateInput.focus();
@@ -359,8 +366,8 @@ class MultipleCascader extends React.Component {
   // 
   handleHasInputChange(e) {
     e.stopPropagation();
-    let width = getComputedStyle(this.refs.saveInputValue).width && getComputedStyle(this.refs.saveInputValue).width.split('px')[0] || 0;
-    this.refs.privateInput.style.width = (e.target.value != '' ? width > 15 ? Math.ceil(width) : 15 : 5) + 'px';
+    let width = Math.ceil((getComputedStyle(this.refs.saveInputValue).width && getComputedStyle(this.refs.saveInputValue).width.split('px')[0] || 0)) + 10;
+    this.refs.privateInput.style.width = (e.target.value != '' ? width > 15 ? width : 15 : 5) + 'px';
     this.setState({
       inputValue: e.target.value
     });
@@ -368,10 +375,12 @@ class MultipleCascader extends React.Component {
   handleHasInputKeyDown(e) {
     e.stopPropagation();
     let {keyCode} = e;
-    let { values, labels, inputValue } = this.state;
-    let count = values.length;
+    let { count, values, labels, inputValue } = this.state;
+    // let count = values.length;
     let refContent = this.refs.content;
     let privateInput = this.refs.privateInput;
+    console.log('inputKeycode', keyCode);
+    // return;
     if([37, 39].includes(keyCode) === false) {
       console.log(inputValue)
       if(inputValue) return;
@@ -393,9 +402,6 @@ class MultipleCascader extends React.Component {
         // e.preventDefault();
       }
     } else {
-      console.log(count)
-      privateInput.blur();
-      refContent.focus();
       let max = values.length;
       if(keyCode == 37) {
         // 左移
@@ -403,15 +409,28 @@ class MultipleCascader extends React.Component {
         this.setState({
           count
         });
-      } else if(keyCode == 39) {
-        // 右移
-        count = count == max ? max : count + 1;
-        this.setState({
-          count
-        });
+        if(max != 0) {
+          privateInput.blur();
+          refContent.focus();
+          var selection = getSelection();
+          selection.selectAllChildren(refContent);
+          selection.collapseToEnd();
+        }
       }
-      var selection = getSelection();
-      selection.extend(refContent, count * 2);
+      //  else if(keyCode == 39) {
+      //   // 右移
+      //   count = count == max ? max : count + 1;
+      //   this.setState({
+      //     count
+      //   });
+      //   if(count == max) {
+      //     privateInput.focus();
+      //     refContent.blur();
+      //   } else {
+      //     // var selection = getSelection();
+      //     // selection.extend(refContent, count * 2);
+      //   }
+      // }
     }
   }
 
@@ -456,11 +475,11 @@ class MultipleCascader extends React.Component {
     console.log(111231231)
     var selection = getSelection()
       // 设置最后光标对象
-      // this.refs.content.focus();
-      this.refs.privateInput.focus();
-      // selection.selectAllChildren(this.refs.content);
-      // // selection.collapseToEnd();
-      // selection.collapseToStart();
+      this.refs.content.focus();
+      // this.refs.privateInput.focus();
+      selection.selectAllChildren(this.refs.content);
+      // selection.collapseToEnd();
+      selection.collapseToStart();
   }
 
   handlePlaceClick() {
@@ -576,15 +595,14 @@ class MultipleCascader extends React.Component {
       'options'
     ]);
 
-    function handleFocus(e) {
-      e.stopPropagation();
-    }
+    let placeholder = props.placeholder || '请选择';
 
     return <Cascader
       options={options}
       onChange={this.handleChange}
       value={this.state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
+      popupClassName="multipleCascaderPopup"
       {...CascaderProps}
     >
       <div className="ant-multiple-cascader">
@@ -619,7 +637,7 @@ class MultipleCascader extends React.Component {
           value={this.state.inputValue}
           ref="defalutInput"
         /> */}
-        <div className={(this.state.values.length || this.state.inputValue.length) ? 'none mul-ant-input-place-text': 'mul-ant-input-place-text'} onClick={this.handlePlaceClick}>请选择</div>
+        <div className={(this.state.values.length || this.state.inputValue.length) ? 'none mul-ant-input-place-text': 'mul-ant-input-place-text'} onClick={this.handlePlaceClick}>{placeholder}</div>
         <Icon type="down" className={state.visiblePopup ? 'ant-cascader-picker-arrow ant-cascader-picker-arrow-expand' : 'ant-cascader-picker-arrow'} />
       </div>
     </Cascader>
