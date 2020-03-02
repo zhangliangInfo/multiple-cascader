@@ -319,8 +319,10 @@ class MultipleCascader extends React.Component {
 
 
   handleContentKeyDown(e) {
-    e.stopPropagation();
     let { keyCode } = e;
+    if(keyCode != 38 && keyCode != 40) {
+      e.stopPropagation();
+    }
     if(keyCode == 37 || keyCode == 39 || keyCode == 8 || keyCode == 46) {
       let {count, values, labels} = this.state;
       let max = values.length;
@@ -380,8 +382,10 @@ class MultipleCascader extends React.Component {
   }
   
   handleHasInputKeyDown(e) {
-    e.stopPropagation();
     let {keyCode} = e;
+    if(keyCode != 38 && keyCode != 40) {
+      e.stopPropagation();
+    }
     if(keyCode == 37 || keyCode == 8) {
       let { count, values, labels } = this.state;
       let refContent = this.refs.refContent;
