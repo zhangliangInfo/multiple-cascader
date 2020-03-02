@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Cascader, Input, Icon } from 'antd';
+import { Cascader, Badge, Icon } from 'antd';
 import omit from 'omit.js';
 // import renderEmpty from 'antd/lib/config-provider/renderEmpty'
 import './style/index.less'
@@ -114,16 +114,13 @@ class MultipleCascader extends React.Component {
       options: props.options,
       cascaderValue: [],
       currentValue: [],
-      flattenOptions: props.showSearch ? flattenTree(props.options, props) : undefined,
+      flattenOptions: flattenTree(props.options, props),
       visiblePopup: false
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(JSON.stringify(this.state.values) != JSON.stringify(prevState.values)) {
-      let {onChange} = this.props;
-      typeof onChange == 'function' && onChange(this.state.values);
-    }
+    
   }
 
   // add active className
@@ -271,7 +268,8 @@ class MultipleCascader extends React.Component {
     for(let i = 0; i<selectedOptions.length; i++) {
       selectedLabels.push(selectedOptions[i].label)
     }
-    const {values: stateValues, labels} = this.state;
+    const {state, props} = this;
+    const {values: stateValues, labels} = state;
     let isMultiple = true;
     let isChange   = true;
     // 用于判断当前点击的位置
@@ -288,10 +286,18 @@ class MultipleCascader extends React.Component {
     let values = [];
     if(isMultiple) {
       // 一二三级禁止混合多选
-      if(stateValues.length && value.length < 3) return;
+      if(props.selectMax && stateValues.length > props.selectMax - 1) {
+        props.selectChange(true, false);
+        return;
+      }
+      if(stateValues.length && value.length < 3) {
+        props.selectChange(false, true);
+        return;
+      }
       stateValues.push(value);
       labels.push(selectedLabels);
       values = stateValues;
+      props.selectChange(false, false);
       this.setState({
         values,
         labels,
@@ -573,6 +579,7 @@ class MultipleCascader extends React.Component {
     ]);
 
     let placeholder = props.placeholder || '请选择';
+    typeof props.onChange == 'function' && props.onChange(state.values);
 
     return <Cascader
       options={options}
@@ -609,6 +616,7 @@ class MultipleCascader extends React.Component {
           <div className={(this.state.values.length || this.state.inputValue.length) ? 'none multiple-ant-input-place-text': 'multiple-ant-input-place-text'} onClick={this.handlePlaceClick}>{placeholder}</div>
         </div>
         <Icon type="down" className={state.visiblePopup ? 'ant-cascader-picker-arrow ant-cascader-picker-arrow-expand' : 'ant-cascader-picker-arrow'} />
+        {/* <Badge count={state.values.length} /> */}
       </div>
     </Cascader>
   }
