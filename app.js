@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom'
-import Index from './src/index.jsx'
+import MultipleCascader from './src/index.jsx'
 
 let options = [{
   value: 'zhejiang',
@@ -92,14 +92,15 @@ let options = [{
 }];
 
 function handleChange(value) {
-  console.log(value)
+  // console.log(value)
 }
 
 
 ReactDOM.render(
-  <Index showSearch={true} options={options}
+  <MultipleCascader
+    onChange={handleChange}
+    options={options}
     changeOnSelect={true}
-    handleChange={handleChange}
     index={0}
   />,
   document.getElementById('app')

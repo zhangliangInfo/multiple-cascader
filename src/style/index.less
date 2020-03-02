@@ -14,111 +14,110 @@
   .ant-multiple-selected-wraper {
     overflow: hidden;
     white-space: nowrap;
-    .saveInputValue {
-      position: absolute;
-      top: -10000px;
-    }
-  }
-  .ant-multiple-selected-wrap {
-    display: inline-block;
-    height: 26px;
-    margin: 0;
-    border-radius: 4px;
-    white-space: nowrap;
-    color: rgba(0,0,0,.25);
-    user-select: none;
-    .ant-mutiple-selected-div {
+    .ant-multiple-selected-wrap {
       display: inline-block;
+      height: 26px;
+      margin: 0;
+      border-radius: 4px;
+      white-space: nowrap;
+      color: rgba(0,0,0,.25);
+      user-select: none;
+      .ant-mutiple-selected-div {
+        display: inline-block;
+      }
+      .ant-multiple-selected {
+        overflow: hidden;
+        position: relative;
+        display: inline-block;
+        height: 22px;
+        line-height: 18px;
+        // padding: 0 20px 0 10px;
+        margin-top: 2px;
+        // margin-right: 5px;
+        border: 1px solid #e8e8ee;
+        background-color: #fafafa;
+        color: rgba(0,0,0,.6);
+        border-radius: 2px;
+        user-select: none;
+        span {
+          display: inline-block;
+          vertical-align: top;
+        }
+        .ant-multiple-prefix, .ant-multiple-suffix {
+          width: 10px;
+          height: 20px;
+        }
+        .ant-multiple-suffix {
+          width: 20px;
+        }
+        .ant-input {
+          height: 20px;
+        }
+        .ant-multiple-icon-remove {
+          position: absolute;
+          right: 4px;
+          transform: scale(0.83333333) rotate(0deg);
+          text-align: center;
+          color: rgba(0, 0, 0, .45);
+          font-size: 12px;
+          cursor: pointer;
+        }
+      }
+      .ant-multiple-selected-placeholder {
+        display: inline-block;
+        width: 5px;
+        height: 22px;
+        line-height: 22px;
+        margin-left: 5px;
+      }
     }
-    .ant-multiple-selected {
-      overflow: hidden;
+    .ant-multiple-selected-wrap:focus {
+      border: 0 none;
+      border-top: 0;
+      box-shadow: none;
+      outline-color: #fff;
+    }
+    .multiple-ant-cascader-text-wrap {
       position: relative;
       display: inline-block;
-      height: 22px;
-      line-height: 18px;
-      // padding: 0 20px 0 10px;
-      margin-top: 2px;
-      // margin-right: 5px;
-      border: 1px solid #e8e8ee;
-      background-color: #fafafa;
-      color: rgba(0,0,0,.6);
-      border-radius: 2px;
-      user-select: none;
-      span {
-        display: inline-block;
+      vertical-align: top;
+      .multiple-ant-cascader-text {
+        position: relative;
+        z-index: 11;
+        width: 5px;
+        height: 24px;
+        padding: 0 5px;
+        margin-left: -8px;
+        box-sizing: content-box;
+        border: 0 none;
+        outline: none;
+        font-size: 14px;
         vertical-align: top;
       }
-      .ant-multiple-prefix, .ant-multiple-suffix {
-        width: 10px;
-        height: 20px;
-      }
-      .ant-multiple-suffix {
-        width: 20px;
-      }
-      .ant-input {
-        height: 20px;
-      }
-      .ant-multiple-icon-remove {
+      .multiple-ant-cascader-text-save {
         position: absolute;
-        right: 4px;
-        transform: scale(0.83333333) rotate(0deg);
-        text-align: center;
-        color: rgba(0, 0, 0, .45);
-        font-size: 12px;
-        cursor: pointer;
+        left: 0;
+        top: 0;
+        background: #fff;
+        color: #fff;
       }
     }
-    .ant-multiple-selected-placeholder {
-      padding: 0;
-      width: 5px;
-      margin-left: 5px;
-      line-height: 20px;
-      border: none;
-      background: #fff;
-      .ant-multiple-selected-input {
-        border: none;
-        width: 10px;
-      }
+    .multiple-ant-input-place-text {
+      position: absolute;
+      left: 0;
+      top: 0;
+      padding-left: 10px;
+      z-index: 12;
+      line-height: 26px;
+      color: rgba(0, 0, 0, .65);
+      opacity: .4;
     }
-  }
-  .isCanInput {
-    position: relative;
-    width: 5px;
-    height: 22px;
-    margin-left: -5px;
-    border: none;
-    // background: transparent;
-    outline: none;
-    vertical-align: top;
-  }
-  .ant-multiple-selected-wrap:focus {
-    border: 0 none;
-    border-top: 0;
-    box-shadow: none;
-    outline-color: #fff;
-  }
-  .mul-ant-input-place-text {
-    display: inline-block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 11;
-    width: 100%;
-    height: 24px;
-    line-height: 24px;
-    padding-left: 5px;
-    outline: none;
-    background: transparent;
-    border: none;
-    // pointer-events: none;
-    cursor: pointer;
-    font-size: 14px;
   }
   .none {
     display: none;
   }
 }
-.ant-multiple-cascader:focus {
+.ant-multiple-cascader-focus {
   border: 1px solid #40a9ff;
   border-color: #40a9ff;
   border-right-width: 1px !important;
