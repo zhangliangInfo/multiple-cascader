@@ -457,7 +457,7 @@ class MultipleCascader extends React.Component {
 
   handleContentClick() {
     let { values } = this.state;
-    let {refContent, inputObj} = this.refs;
+    let {refContentWrap, refContent, inputObj} = this.refs;
     if(values.length) {
       var selection = getSelection()
       // 设置最后光标对象
@@ -465,6 +465,7 @@ class MultipleCascader extends React.Component {
       selection.selectAllChildren(refContent);
       // selection.collapseToEnd();
       selection.collapseToStart();
+      refContentWrap.scrollTo(0, 0);
     } else {
       inputObj.focus();
     }
@@ -561,12 +562,13 @@ class MultipleCascader extends React.Component {
     let { props, state } = this;
     let { options } = props;
     const names = getFilledFieldNames(this.props);
-    if (options && options.length > 0) {
+    let cascaderOptions = options;
+    if (cascaderOptions && cascaderOptions.length > 0) {
       if (state.inputValue) {
-        options = this.generateFilteredOptions();
+        cascaderOptions = this.generateFilteredOptions();
       }
     } else {
-      options = [
+      cascaderOptions = [
         {
           // [names.label]: notFoundContent || renderEmpty('Cascader'),
           [names.label]: 'Not Found',
@@ -586,7 +588,7 @@ class MultipleCascader extends React.Component {
     typeof props.onChange == 'function' && props.onChange(state.values);
 
     return <Cascader
-      options={options}
+      options={cascaderOptions}
       onChange={this.handleChange}
       value={this.state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
@@ -596,6 +598,7 @@ class MultipleCascader extends React.Component {
       <div className={state.visiblePopup ? 'ant-multiple-cascader ant-multiple-cascader-focus' : 'ant-multiple-cascader'}>
         <div className="ant-multiple-selected-wraper"
           onClick={this.handleContentClick}
+          ref="refContentWrap"
         >
           <div 
             className="ant-multiple-selected-wrap"

@@ -92,7 +92,17 @@ let options = [{
 }];
 
 function handleChange(value) {
-  // console.log(value)
+  console.log(value)
+}
+
+/**
+ * 
+ * @param {Boolean} isCeil : 已达到上限
+ * @param {Boolean} notAllow ： 触发非法操作
+ */
+function handleSelectedChange(isCeil, notAllow) {
+  console.log(isCeil)
+  console.log(notAllow)
 }
 
 
@@ -101,6 +111,8 @@ ReactDOM.render(
     onChange={handleChange}
     options={options}
     changeOnSelect={true}
+    selectMax="3"
+    selectChange={handleSelectedChange}
     index={0}
   />,
   document.getElementById('app')
