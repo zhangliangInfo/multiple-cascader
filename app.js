@@ -114,6 +114,7 @@ ReactDOM.render(
     selectMax="3"
     selectChange={handleSelectedChange}
     index={0}
+    popupClassName='mypopupClass'
   />,
   document.getElementById('app')
 )

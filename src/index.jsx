@@ -109,6 +109,7 @@ class MultipleCascader extends React.Component {
     this.state = {
       values: [],
       labels: [],
+      isModify: false,
       inputValue: '',
       count: 0,
       options: props.options,
@@ -120,20 +121,28 @@ class MultipleCascader extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
+    if(prevState.isModify != this.state.isModify) {
+      let {onChange} = this.props;
+      typeof onChange == 'function' && onChange(this.state.values);
+    }
   }
 
   // add active className
   getClassActive(level, ary = []) {
-    const {index} = this.props;
+    const {index, popupClassName} = this.props;
     if(index == undefined) return;
     if(isNaN(level)  || typeof level != 'number') return;
-    const parentDOM = document.querySelectorAll('.ant-cascader-menus')[index];
+    let parentDOM = null;
+    if(popupClassName) {
+      parentDOM = document.querySelector('.' + popupClassName);
+    } else {
+      parentDOM = document.querySelectorAll('.ant-cascader-menus')[index];
+    }
     if(parentDOM == null) return;
     const parentUl = parentDOM.querySelectorAll('.ant-cascader-menu')[level];
     if(parentUl == null) return;
     const LiItems = parentUl.querySelectorAll('li');
-    const actyCls = 'multiple-cascader-menu-item-active'
+    const actyCls = 'multiple-cascader-menu-item-active';
     LiItems.forEach(LiItem => {
       const clsList = Array.from(LiItem.classList);
       if(clsList.indexOf(actyCls) !== -1) {
@@ -209,7 +218,6 @@ class MultipleCascader extends React.Component {
           firstObj.children.push(values[1]);
         }
       });
-      // console.log(firstObj)
       // 二级
       let {index, children} = firstObj;
       if(index !== undefined) {
@@ -242,9 +250,6 @@ class MultipleCascader extends React.Component {
           });
         });
       }
-      // console.log(firstIdxs)
-      // console.log(firstObj.childrenIndex)
-      // console.log(secObj.childrenIndex)
       // 加上样式
       _this.getClassActive(0, firstIdxs);
       _this.getClassActive(1, firstObj.childrenIndex);
@@ -263,13 +268,13 @@ class MultipleCascader extends React.Component {
   }
 
   handleChange(value, selectedOptions) {
-    console.log(value);
     let selectedLabels = [];
     for(let i = 0; i<selectedOptions.length; i++) {
       selectedLabels.push(selectedOptions[i].label)
     }
     const {state, props} = this;
-    const {values: stateValues, labels} = state;
+    const {values: stateValues, labels, isModify} = state;
+    const {selectChange} = props;
     let isMultiple = true;
     let isChange   = true;
     // 用于判断当前点击的位置
@@ -287,20 +292,21 @@ class MultipleCascader extends React.Component {
     if(isMultiple) {
       // 一二三级禁止混合多选
       if(props.selectMax && stateValues.length > props.selectMax - 1) {
-        props.selectChange(true, false);
+        typeof selectChange == 'function' && selectChange(true, false);
         return;
       }
       if(stateValues.length && value.length < 3) {
-        props.selectChange(false, true);
+        typeof selectChange == 'function' && selectChange(false, true);
         return;
       }
       stateValues.push(value);
       labels.push(selectedLabels);
       values = stateValues;
-      props.selectChange(false, false);
+      typeof selectChange == 'function' && selectChange(false, false);
       this.setState({
         values,
         labels,
+        isModify: !isModify,
         cascaderValue: values[0],
         inputValue: ''
       });
@@ -310,6 +316,7 @@ class MultipleCascader extends React.Component {
         this.setState({
           values,
           labels: [selectedLabels],
+          isModify: !isModify,
           cascaderValue: value,
           inputValue: ''
         });
@@ -324,7 +331,7 @@ class MultipleCascader extends React.Component {
       e.stopPropagation();
     }
     if(keyCode == 37 || keyCode == 39 || keyCode == 8 || keyCode == 46) {
-      let {count, values, labels} = this.state;
+      let {count, values, labels, isModify} = this.state;
       let max = values.length;
       let {refContent, inputObj} = this.refs;
       // 37 left, 39 right
@@ -341,6 +348,7 @@ class MultipleCascader extends React.Component {
         if(count < max) {
           values.splice(count, 1);
           labels.splice(count, 1);
+          isModify = !isModify;
         }
         e.preventDefault();
       }
@@ -348,6 +356,7 @@ class MultipleCascader extends React.Component {
         count,
         values,
         labels,
+        isModify,
         cascaderValue: values[0] || []
       });
       if(count == max || (max - count == 1) && keyCode == 46) {
@@ -387,7 +396,7 @@ class MultipleCascader extends React.Component {
       e.stopPropagation();
     }
     if(keyCode == 37 || keyCode == 8) {
-      let { count, values, labels } = this.state;
+      let { count, values, labels, isModify } = this.state;
       let refContent = this.refs.refContent;
       let inputObj = this.refs.inputObj;
       let max = values.length;
@@ -411,6 +420,7 @@ class MultipleCascader extends React.Component {
           count,
           values,
           labels,
+          isModify: !isModify,
           cascaderValue: values[0] || []
         });
         this.getChildActiveIndexs(this.props.options, values, values[0]);
@@ -437,13 +447,14 @@ class MultipleCascader extends React.Component {
   }
 
   handleRemoveClick(idx) {
-    let { values, labels } = this.state;
+    let { values, labels, isModify } = this.state;
     values.splice(idx, 1);
     labels.splice(idx, 1);
     let cascaderValue = values.length ? values[0] : [];
     this.setState({
       values,
       labels,
+      isModify: !isModify,
       cascaderValue
     });
     this.getChildActiveIndexs(this.props.options, values, cascaderValue);
@@ -458,17 +469,19 @@ class MultipleCascader extends React.Component {
   handleContentClick() {
     let { values } = this.state;
     let {refContentWrap, refContent, inputObj} = this.refs;
-    if(values.length) {
-      var selection = getSelection()
-      // 设置最后光标对象
-      refContent.focus();
-      selection.selectAllChildren(refContent);
-      // selection.collapseToEnd();
-      selection.collapseToStart();
-      refContentWrap.scrollTo(0, 0);
-    } else {
-      inputObj.focus();
-    }
+    inputObj.focus();
+    refContentWrap.scrollTo(refContent.clientWidth, 0);
+    // if(values.length) {
+    //   var selection = getSelection()
+    //   // 设置最后光标对象
+    //   refContent.focus();
+    //   selection.selectAllChildren(refContent);
+    //   // selection.collapseToEnd();
+    //   selection.collapseToStart();
+    //   refContentWrap.scrollTo(0, 0);
+    // } else {
+    //   inputObj.focus();
+    // }
   }
 
   handlePlaceClick() {
@@ -585,14 +598,13 @@ class MultipleCascader extends React.Component {
     ]);
 
     let placeholder = props.placeholder || '请选择';
-    typeof props.onChange == 'function' && props.onChange(state.values);
 
     return <Cascader
       options={cascaderOptions}
       onChange={this.handleChange}
-      value={this.state.cascaderValue}
+      value={state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
-      popupClassName="multipleCascaderPopup"
+      popupClassName={props.popupClassName}
       {...CascaderProps}
     >
       <div className={state.visiblePopup ? 'ant-multiple-cascader ant-multiple-cascader-focus' : 'ant-multiple-cascader'}>
@@ -615,12 +627,12 @@ class MultipleCascader extends React.Component {
               className="multiple-ant-cascader-text"
               onChange={this.handleHasInputChange}
               onKeyDown={this.handleHasInputKeyDown}
-              value={this.state.inputValue}
+              value={state.inputValue}
               ref="inputObj"
               />
-            <div ref="saveInputValue" className="multiple-ant-cascader-text-save">{this.state.inputValue}</div>
+            <div ref="saveInputValue" className="multiple-ant-cascader-text-save">{state.inputValue}</div>
           </div>
-          <div className={(this.state.values.length || this.state.inputValue.length) ? 'none multiple-ant-input-place-text': 'multiple-ant-input-place-text'} onClick={this.handlePlaceClick}>{placeholder}</div>
+          <div className={(state.values.length || state.inputValue.length) ? 'none multiple-ant-input-place-text': 'multiple-ant-input-place-text'} onClick={this.handlePlaceClick}>{placeholder}</div>
         </div>
         <Icon type="down" className={state.visiblePopup ? 'ant-cascader-picker-arrow ant-cascader-picker-arrow-expand' : 'ant-cascader-picker-arrow'} />
         {/* <Badge count={state.values.length} /> */}

@@ -1,9 +1,7 @@
 .ant-multiple-cascader {
   position: relative;
   overflow: hidden;
-  width: 500px;
   height: 28px;
-  // margin: 50px auto;
   line-height: 28px;
   font-size: 14px;
   background: #fff;
@@ -135,27 +133,27 @@
   border-right-width: 1px !important;
 }
 // ant
-.multipleCascaderPopup {
-  .ant-cascader-menu-item {
-    margin-bottom: 1px;
-    span.ant-cascader-menu-item-expand-icon {
+.ant-cascader-menu-item {
+  margin-bottom: 1px;
+  span.ant-cascader-menu-item-expand-icon {
+    display: none;
+  }
+}
+.multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
+  font-weight: 600;
+  background-color: #f0f0f0;
+  // background-color: #faa;
+}
+.ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
+  background-color: #d2d2d2;
+  // background-color: #f66;
+}
+.ant-cascader-menu {
+  li {
+    .ant-cascader-menu-item-expand-icon {
       display: none;
     }
   }
-  .multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .multiple-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
-    font-weight: 600;
-    background-color: #fafafa;
-    // background-color: #faa;
-  }
-  .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled), .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled):hover {
-    background-color: #f0f0f0;
-    // background-color: #f66;
-  }
-  .ant-cascader-menu {
-    li {
-      .ant-cascader-menu-item-expand-icon {
-        display: none;
-      }
-    }
-  }
 }
+// .multipleCascaderPopup {
+// }
