@@ -1,6 +1,6 @@
 {
   "name": "multiple-cascader",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "multiple-cascader",
   "private": false,
   "main": "lib/index.js",
