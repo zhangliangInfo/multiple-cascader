@@ -322,6 +322,11 @@ class MultipleCascader extends React.Component {
         });
       }
     }
+    let {refContentWrap, refContent, inputObj} = this.refs;
+    inputObj.focus();
+    setTimeout(function(){
+      refContentWrap.scrollTo(refContent.clientWidth, 0);
+    }, 0);
   }
 
 
