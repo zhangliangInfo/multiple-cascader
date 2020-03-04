@@ -451,7 +451,8 @@ class MultipleCascader extends React.Component {
     return label.join(' / ');
   }
 
-  handleRemoveClick(idx) {
+  handleRemoveClick(idx, e) {
+    e.stopPropagation();
     let { values, labels, isModify } = this.state;
     values.splice(idx, 1);
     labels.splice(idx, 1);
