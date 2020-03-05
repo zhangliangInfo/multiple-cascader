@@ -116,7 +116,8 @@ class MultipleCascader extends React.Component {
       cascaderValue: [],
       currentValue: [],
       flattenOptions: flattenTree(props.options, props),
-      visiblePopup: false
+      visiblePopup: false,
+      timeoutIds: []
     }
   }
 
@@ -125,6 +126,15 @@ class MultipleCascader extends React.Component {
       let {onChange} = this.props;
       typeof onChange == 'function' && onChange(this.state.values);
     }
+    let {timeoutIds} = this.state
+    timeoutIds.forEach((_, id) => {
+      let clearId = _ - 1;
+      clearTimeout(clearId);
+      timeoutIds.splice(id, 1);
+      this.setState({
+        timeoutIds
+      });
+    });
   }
 
   // add active className
@@ -150,7 +160,7 @@ class MultipleCascader extends React.Component {
       }
       LiItem.className = clsList.join(' ');
     });
-    setTimeout(function() {
+    let timeId = setTimeout(function() {
       ary.forEach(_ => {
         let LiItem = parentUl.querySelectorAll('li')[_];
         if(LiItem && !Array.from(LiItem.classList).includes(actyCls)) {
@@ -158,6 +168,7 @@ class MultipleCascader extends React.Component {
         }
       });
     }, 0);
+    this.saveTimeoutHandler(timeId);
   }
 
   handlePopupVisibleChange(visible) {
@@ -324,9 +335,10 @@ class MultipleCascader extends React.Component {
     }
     let {refContentWrap, refContent, inputObj} = this.refs;
     inputObj.focus();
-    setTimeout(function(){
+    let timeId = setTimeout(function(){
       refContentWrap.scrollTo(refContent.clientWidth, 0);
     }, 0);
+    this.saveTimeoutHandler(timeId);
   }
 
 
@@ -394,11 +406,29 @@ class MultipleCascader extends React.Component {
     this.setState({
       inputValue: value
     });
+    let _this = this;
     if(value) {
       this.setState({
         visiblePopup: true
       });
+      let timeId = setTimeout(function() {
+        document.querySelector('.' + _this.props.popupClassName).querySelector('.ant-cascader-menu').style.width = _this.refs.refContentWrap.clientWidth + 'px';
+      }, 0);
+      this.saveTimeoutHandler(timeId);
+    } else {
+      let timeId = setTimeout(function() {
+        document.querySelector('.' + _this.props.popupClassName).querySelector('.ant-cascader-menu').style.width = 'auto';
+      }, 0);
+      this.saveTimeoutHandler(timeId);
     }
+  }
+
+  saveTimeoutHandler(timeId) {
+    let {timeoutIds} = this.state;
+    timeoutIds.push(timeId);
+    this.setState({
+      timeoutIds: timeoutIds
+    });
   }
   
   handleHasInputKeyDown(e) {
