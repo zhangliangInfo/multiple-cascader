@@ -388,11 +388,17 @@ class MultipleCascader extends React.Component {
   // 
   handleHasInputChange(e) {
     e.stopPropagation();
+    let {value} = e.target;
     let width = Math.ceil((getComputedStyle(this.refs.saveInputValue).width && getComputedStyle(this.refs.saveInputValue).width.split('px')[0] || 0)) + 10;
-    this.refs.inputObj.style.width = (e.target.value != '' ? width > 15 ? width : 15 : 5) + 'px';
+    this.refs.inputObj.style.width = (value != '' ? width > 15 ? width : 15 : 5) + 'px';
     this.setState({
-      inputValue: e.target.value
+      inputValue: value
     });
+    if(value) {
+      this.setState({
+        visiblePopup: true
+      });
+    }
   }
   
   handleHasInputKeyDown(e) {
@@ -611,6 +617,7 @@ class MultipleCascader extends React.Component {
       value={state.cascaderValue}
       onPopupVisibleChange={this.handlePopupVisibleChange}
       popupClassName={props.popupClassName}
+      popupVisible={state.visiblePopup}
       {...CascaderProps}
     >
       <div className={state.visiblePopup ? 'ant-multiple-cascader ant-multiple-cascader-focus' : 'ant-multiple-cascader'}>
