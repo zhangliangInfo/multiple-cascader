@@ -337,6 +337,7 @@ class MultipleCascader extends React.Component {
     inputObj.focus();
     let timeId = setTimeout(function(){
       refContentWrap.scrollTo(refContent.clientWidth, 0);
+      document.querySelector('.' + props.popupClassName).querySelector('.ant-cascader-menu').style.width = 'auto';
     }, 0);
     this.saveTimeoutHandler(timeId);
   }
