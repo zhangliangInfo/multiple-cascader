@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Cascader, Badge, Icon } from 'antd';
 import omit from 'omit.js';
+import classNames from 'classnames';
 // import renderEmpty from 'antd/lib/config-provider/renderEmpty'
 import './style/index.less'
 
@@ -105,6 +106,7 @@ class MultipleCascader extends React.Component {
     this.handleHasInputChange = this.handleHasInputChange.bind(this);
     this.handleHasInputKeyDown = this.handleHasInputKeyDown.bind(this);
     this.handlePlaceClick = this.handlePlaceClick.bind(this);
+    this.clearSelection = this.clearSelection.bind(this);
     
     this.state = {
       values: [],
@@ -160,15 +162,15 @@ class MultipleCascader extends React.Component {
       }
       LiItem.className = clsList.join(' ');
     });
-    let timeId = setTimeout(function() {
+    this['timeoutIdCls' + level] = setTimeout(function() {
       ary.forEach(_ => {
         let LiItem = parentUl.querySelectorAll('li')[_];
         if(LiItem && !Array.from(LiItem.classList).includes(actyCls)) {
           LiItem.className += (' ' + actyCls);
         }
       });
-    }, 0);
-    this.saveTimeoutHandler(timeId);
+      clearTimeout(this['timeoutIdCls' + level]);
+    }, 100);
   }
 
   handlePopupVisibleChange(visible) {
@@ -337,7 +339,7 @@ class MultipleCascader extends React.Component {
     inputObj.focus();
     let timeId = setTimeout(function(){
       refContentWrap.scrollTo(refContent.clientWidth, 0);
-      document.querySelector('.' + props.popupClassName).querySelector('.ant-cascader-menu').style.width = 'auto';
+      document.querySelector('.' + props.popupClassName).querySelector('.ant-cascader-menu').removeAttribute('style');
     }, 0);
     this.saveTimeoutHandler(timeId);
   }
@@ -417,10 +419,7 @@ class MultipleCascader extends React.Component {
       }, 0);
       this.saveTimeoutHandler(timeId);
     } else {
-      let timeId = setTimeout(function() {
-        document.querySelector('.' + _this.props.popupClassName).querySelector('.ant-cascader-menu').style.width = 'auto';
-      }, 0);
-      this.saveTimeoutHandler(timeId);
+      document.querySelector('.' + _this.props.popupClassName).querySelector('.ant-cascader-menu').removeAttribute('style');
     }
   }
 
@@ -535,6 +534,25 @@ class MultipleCascader extends React.Component {
     return () => document.getElementById('abcd')
   }
 
+  clearSelection(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!this.state.inputValue) {
+      this.handlePopupVisibleChange(false);
+    } else {
+      this.setState({
+        inputValue: ''
+      });
+      document.querySelector('.' + this.props.popupClassName).querySelector('.ant-cascader-menu').removeAttribute('style');
+    }
+    this.setState({
+      values: [],
+      labels: [],
+      cascaderValue: []
+    });
+    this.getChildActiveIndexs(this.props.options, [], []);
+  };
+
   generateFilteredOptions(prefixCls = 'ant-cascader') {
     const { showSearch = {}, notFoundContent } = this.props;
     const names = {
@@ -590,8 +608,8 @@ class MultipleCascader extends React.Component {
     return [
       {
         [names.value]: 'ANT_CASCADER_NOT_FOUND',
+        [names.label]: notFoundContent,
         // [names.label]: notFoundContent || renderEmpty('Cascader'),
-        [names.label]: 'Not Found',
         disabled: true,
         isEmptyNode: true,
       },
@@ -599,6 +617,22 @@ class MultipleCascader extends React.Component {
   }
 
   render() {
+    let { props, state } = this;
+    let { options } = props;
+
+    const clearIcon =
+      (props.allowClear && !props.disabled && state.values.length > 0) || state.inputValue ? (
+        <Icon
+          className="ant-multiple-picker-clear"
+          type="close-circle"
+          onClick={this.clearSelection}
+        />
+      ) : null;
+    const pickerCls = classNames('ant-multiple-cascader', {
+      'ant-multiple-cascader-focus': state.visiblePopup,
+      'ant-multiple-cascader-disabled': props.disabled,
+      [props.className]: props.className != '',
+    });
     const getFileItem = () => {
       const {labels} = this.state;
       if(labels.length) {
@@ -615,8 +649,7 @@ class MultipleCascader extends React.Component {
         })
       }
     }
-    let { props, state } = this;
-    let { options } = props;
+    
     const names = getFilledFieldNames(this.props);
     let cascaderOptions = options;
     if (cascaderOptions && cascaderOptions.length > 0) {
@@ -626,8 +659,7 @@ class MultipleCascader extends React.Component {
     } else {
       cascaderOptions = [
         {
-          // [names.label]: notFoundContent || renderEmpty('Cascader'),
-          [names.label]: 'Not Found',
+          [names.label]: props.notFoundContent,
           [names.value]: 'ANT_CASCADER_NOT_FOUND',
           disabled: true,
         },
@@ -651,7 +683,7 @@ class MultipleCascader extends React.Component {
       popupVisible={state.visiblePopup}
       {...CascaderProps}
     >
-      <div className={state.visiblePopup ? 'ant-multiple-cascader ant-multiple-cascader-focus' : 'ant-multiple-cascader'}>
+      <div className={pickerCls}>
         <div className="ant-multiple-selected-wraper"
           onClick={this.handleContentClick}
           ref="refContentWrap"
@@ -666,23 +698,32 @@ class MultipleCascader extends React.Component {
             {getFileItem()}
             <div className="ant-multiple-selected-placeholder"></div>
           </div>
-          <div className="multiple-ant-cascader-text-wrap">
+          <div className="ant-multiple-cascader-text-wrap">
             <input 
-              className="multiple-ant-cascader-text"
+              className="ant-multiple-cascader-text"
               onChange={this.handleHasInputChange}
               onKeyDown={this.handleHasInputKeyDown}
               value={state.inputValue}
               ref="inputObj"
               />
-            <div ref="saveInputValue" className="multiple-ant-cascader-text-save">{state.inputValue}</div>
+            <div ref="saveInputValue" className="ant-multiple-cascader-text-save">{state.inputValue}</div>
           </div>
-          <div className={(state.values.length || state.inputValue.length) ? 'none multiple-ant-input-place-text': 'multiple-ant-input-place-text'} onClick={this.handlePlaceClick}>{placeholder}</div>
+          <div className={(state.values.length || state.inputValue.length) ? 'none ant-multiple-input-place-text': 'ant-multiple-input-place-text'} onClick={this.handlePlaceClick}>{placeholder}</div>
         </div>
+        {clearIcon}
         <Icon type="down" className={state.visiblePopup ? 'ant-cascader-picker-arrow ant-cascader-picker-arrow-expand' : 'ant-cascader-picker-arrow'} />
         {/* <Badge count={state.values.length} /> */}
       </div>
     </Cascader>
   }
+}
+
+MultipleCascader.defaultProps = {
+  disabled: false,
+  allowClear: true,
+  popupClassName: 'myPopupClassName',
+  className: '',
+  notFoundContent: 'Not Found',
 }
 
 export default MultipleCascader
