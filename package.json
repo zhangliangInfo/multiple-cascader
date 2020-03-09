@@ -1,6 +1,6 @@
 {
   "name": "multiple-cascader",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "multiple-cascader",
   "private": false,
   "main": "lib/index.js",
@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "antd": "^2.13.14",
+    "classnames": "^2.2.6",
     "less": "^3.11.1",
     "less-loader": "^5.0.0",
     "omit.js": "^1.0.2",
