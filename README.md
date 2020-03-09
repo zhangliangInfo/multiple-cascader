@@ -17,9 +17,11 @@ Multiple Cascader
 
 | 参数 | 说明 | 类型 | 默认值 | 是否支持 |
 | --- | --- | --- | --- | --- |
+| selectMax | 最大输入条数 | number | 新增 |
 | allowClear | 是否支持清除 | boolean | true | Y |
 | autoFocus | 自动获取焦点 | boolean | false | N |
 | changeOnSelect | 当此项为 true 时，点选每级菜单选项值都会发生变化，具体见上面的演示 | boolean | false | Y |
+| selectChange | 选中完成后的回调 | (isCeil, notAllow) => void | - | 新增 |
 | className | 自定义类名 | string | - | Y |
 | defaultValue | 默认的选中项 | string\[] | \[] | N |
 | disabled | 禁用 | boolean | false | Y |
