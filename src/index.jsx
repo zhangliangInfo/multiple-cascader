@@ -141,14 +141,11 @@ class MultipleCascader extends React.Component {
 
   // add active className
   getClassActive(level, ary = []) {
-    const {index, popupClassName} = this.props;
-    if(index == undefined) return;
+    const {popupClassName} = this.props;
     if(isNaN(level)  || typeof level != 'number') return;
     let parentDOM = null;
     if(popupClassName) {
       parentDOM = document.querySelector('.' + popupClassName);
-    } else {
-      parentDOM = document.querySelectorAll('.ant-cascader-menus')[index];
     }
     if(parentDOM == null) return;
     const parentUl = parentDOM.querySelectorAll('.ant-cascader-menu')[level];
@@ -211,9 +208,9 @@ class MultipleCascader extends React.Component {
   getChildActiveIndexs(options = [], stateValues = [], cascaderValue = []) {
     let _this = this;
     function findActiveIndex(options = [], stateValue = [], cascaderValue = []) {
-      if(stateValue.length < 1) {
-        return;
-      }
+      // if(stateValue.length < 1) {
+      //   return;
+      // }
       let [firstName, secName, thirdName] = cascaderValue;
       let firstObj = {}, secObj = {};
       let firstIdxs = [];
