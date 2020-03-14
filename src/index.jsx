@@ -537,7 +537,8 @@ class MultipleCascader extends React.Component {
   clearSelection(e) {
     e.preventDefault();
     e.stopPropagation();
-    if (!this.state.inputValue) {
+    let {inputValue, isModify} = this.state;
+    if (!inputValue) {
       this.handlePopupVisibleChange(false);
     } else {
       this.setState({
@@ -548,7 +549,8 @@ class MultipleCascader extends React.Component {
     this.setState({
       values: [],
       labels: [],
-      cascaderValue: []
+      cascaderValue: [],
+      isModify: !isModify
     });
     this.getChildActiveIndexs(this.props.options, [], []);
   };
